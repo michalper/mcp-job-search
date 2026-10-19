@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/) (pre-1.0:
 a minor bump means new features, a patch means fixes only — no stability
 guarantee yet on the exact JSON shape of tool results).
 
+## [0.1.1] - 2026-10-19
+
+### Changed
+- Improved `lint_cv`'s tool and `pdf_path` parameter descriptions per
+  Glama's Tool Definition Quality Score feedback: states explicit
+  read-only/no-mutation behavior, explains what `pdf_path` actually changes
+  rather than restating the schema, and gives explicit usage guidance
+  relative to `render_pdf`.
+- README documents the published PyPI/registry locations and `pip`/`uvx`
+  install instructions.
+
 ## [0.1.0] - 2026-10-19
 
 ### Added
