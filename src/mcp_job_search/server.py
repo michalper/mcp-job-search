@@ -111,19 +111,34 @@ def render_pdf(
 
 @server.tool(
     description=(
+        "Read-only — never modifies html_path, pdf_path, or any other file. "
         "Lints a CV/cover-letter HTML file against YOUR OWN configurable "
-        "rule set (banned phrases, skills-section-only bans, achievement- "
-        "weight overclaims, title checks, an optional required-clause check, "
-        "a body-link-style check, and page-count limits). Rules come from "
-        "LINT_RULES_PATH (default: the bundled generic example) — point it "
-        "at your own YAML to lint against your own facts. Pass pdf_path to "
-        "also check page count and PDF freshness."
+        "rule set (banned phrases, skills-section bans, achievement-weight "
+        "overclaims, title/GDPR/link checks, page-count limits), read from "
+        "LINT_RULES_PATH (an env var, not a parameter here; defaults to a "
+        "bundled generic example). Mechanical matching only — cannot catch "
+        "semantic fabrication (two true facts combined into a false-sounding "
+        "one), which still needs a human or independent review. Call before "
+        "render_pdf while iterating on a draft (cheap, no Chrome, HTML-only "
+        "checks); call again after render_pdf with pdf_path to also check "
+        "page count and staleness — render_pdf itself runs none of this."
     )
 )
 def lint_cv(
-    html_path: Annotated[str, Field(description="Path to the HTML file to lint.")],
+    html_path: Annotated[
+        str, Field(description="Path to the HTML file to lint, as currently saved on disk.")
+    ],
     pdf_path: Annotated[
-        str | None, Field(description="If given, also checks page count and freshness.")
+        str | None,
+        Field(
+            description=(
+                "Optional. Omit to run only the HTML-based checks (content, skills, "
+                "weight, title, links). Pass the already-rendered PDF's path to ALSO "
+                "check its page count against your configured page_limits and confirm "
+                "it isn't older than html_path — this tool never renders a PDF itself; "
+                "call render_pdf first if pdf_path doesn't exist yet."
+            )
+        ),
     ] = None,
 ) -> dict[str, Any]:
     return _lint_cv(html_path=html_path, pdf_path=pdf_path)
