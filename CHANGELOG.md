@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/) (pre-1.0:
 a minor bump means new features, a patch means fixes only — no stability
 guarantee yet on the exact JSON shape of tool results).
 
+## [0.2.0] - 2026-10-19
+
+### Added
+- `list_applications(portal?, company?)` — read-only query over the
+  application registry, returning matching rows as structured dicts.
+- `update_application_status(portal, company, new_status, role?, dry_run?)`
+  — rewrites one row's status cell in place; refuses to guess and lists the
+  ambiguous line numbers when more than one row matches.
+
+Closes the gap flagged in review: `log_application` was append-only, with
+no way to check for a duplicate before applying or to update a status
+afterward. `log_application`'s own description now points at both new
+tools instead of being called again for an update.
+
 ## [0.1.1] - 2026-10-19
 
 ### Changed

@@ -20,7 +20,7 @@ specific posting even worth reading?"*
 
 > **Status: early stage.** Built for personal use, published because the
 > configurable anti-fabrication linter and application-registry tooling are
-> generically useful beyond one person's job search. All five tools are
+> generically useful beyond one person's job search. All seven tools are
 > working. See `CHANGELOG.md` for what changed and what was verified live.
 
 ## How this differs from other job-search MCP servers
@@ -162,6 +162,8 @@ person's career.
 | `render_pdf` | **working** | headless-Chrome HTML→PDF with the exact flags that avoid known hangs/silent failures; cross-platform `CHROME_PATH` auto-detection; page-count verification via raw PDF byte scan |
 | `lint_cv` | **working** | configurable mechanical linter — banned phrases, skills-section-only bans, achievement-weight overclaims, title/GDPR/link checks, page-count limits, all driven by a YAML file you control |
 | `log_application` | **working** | appends one row to a Markdown application registry in the correct section and date position, with a `column_map` for non-English headers; never invents free-text content |
+| `list_applications` | **working** | read-only query over the registry (filter by portal/company) — use before `log_application` to check for a duplicate |
+| `update_application_status` | **working** | rewrites one row's status cell in place; refuses to guess when more than one row matches |
 
 ## Verified job-board coverage (`fetch_job_posting`, 2026-10-19)
 
