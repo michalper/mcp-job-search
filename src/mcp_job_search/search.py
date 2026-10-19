@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 from typing import Any
 
+from . import cache
 from .sources import adzuna, arbeitnow, jsearch
 from .sources.base import NormalizedJob, SourceError
 
@@ -26,7 +27,13 @@ def search_jobs(
     location: str | None = None,
     remote_only: bool = False,
     sources: list[str] | None = None,
+    use_cache: bool = True,
 ) -> dict[str, Any]:
+    if use_cache:
+        cached = cache.get_cached(keywords, location, remote_only, sources)
+        if cached is not None:
+            return {**cached, "from_cache": True}
+
     wanted = sources if sources is not None else list(_REGISTRY)
     jobs: list[NormalizedJob] = []
     errors: list[SourceError] = []
@@ -44,7 +51,10 @@ def search_jobs(
         if error is not None:
             errors.append(error)
 
-    return {
+    result = {
         "jobs": [asdict(j) for j in jobs],
         "source_errors": [asdict(e) for e in errors],
     }
+    if use_cache:
+        cache.store(keywords, location, remote_only, sources, result)
+    return {**result, "from_cache": False}

@@ -16,7 +16,8 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
-_CHROME_PATH = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+from . import config as app_config
+
 _TIMEOUT_S = 60
 
 _PAGE_OBJECT = re.compile(rb"/Type\s*/Page[^s]")
@@ -55,7 +56,7 @@ def render_pdf(html_path: str, pdf_path: str | None = None) -> dict[str, Any]:
     pdf_p = Path(pdf_path).expanduser().resolve() if pdf_path else html_p.with_suffix(".pdf")
 
     argv = [
-        _CHROME_PATH,
+        app_config.chrome_path(),
         "--headless",
         "--disable-gpu",
         "--no-pdf-header-footer",

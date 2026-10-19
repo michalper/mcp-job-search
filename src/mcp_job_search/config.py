@@ -8,6 +8,8 @@ bundled generic example config) rather than failing the whole server.
 from __future__ import annotations
 
 import os
+import shutil
+import sys
 from pathlib import Path
 
 
@@ -27,6 +29,47 @@ def jsearch_key() -> str | None:
     return os.environ.get("RAPIDAPI_JSEARCH_KEY") or None
 
 
+_MACOS_CHROME_CANDIDATES = [
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "/Applications/Chromium.app/Contents/MacOS/Chromium",
+]
+_LINUX_CHROME_BINARIES = [
+    "google-chrome-stable", "google-chrome", "chromium-browser", "chromium",
+]
+_WINDOWS_CHROME_CANDIDATES = [
+    r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+    r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+]
+
+
+def chrome_path() -> str:
+    """Resolution order: `CHROME_PATH` env var, then a platform-appropriate
+    guess. Returns the first candidate even if it doesn't exist (rather than
+    raising) so render_pdf's existing "Chrome invocation failed" error — not
+    an unrelated config exception — is what the caller sees."""
+    configured = os.environ.get("CHROME_PATH")
+    if configured:
+        return configured
+
+    if sys.platform == "darwin":
+        for candidate in _MACOS_CHROME_CANDIDATES:
+            if Path(candidate).is_file():
+                return candidate
+        return _MACOS_CHROME_CANDIDATES[0]
+
+    if sys.platform.startswith("win"):
+        for candidate in _WINDOWS_CHROME_CANDIDATES:
+            if Path(candidate).is_file():
+                return candidate
+        return _WINDOWS_CHROME_CANDIDATES[0]
+
+    for binary in _LINUX_CHROME_BINARIES:
+        found = shutil.which(binary)
+        if found:
+            return found
+    return _LINUX_CHROME_BINARIES[0]
+
+
 _PACKAGE_ROOT = Path(__file__).resolve().parent.parent.parent
 
 
@@ -42,3 +85,20 @@ def registry_config_path() -> Path:
     if configured:
         return Path(configured).expanduser()
     return _PACKAGE_ROOT / "config" / "registry.example.yaml"
+
+
+def search_cache_dir() -> Path:
+    configured = os.environ.get("SEARCH_CACHE_DIR")
+    if configured:
+        return Path(configured).expanduser()
+    return Path.home() / ".cache" / "mcp-job-search" / "search"
+
+
+def search_cache_ttl_seconds() -> int:
+    configured = os.environ.get("SEARCH_CACHE_TTL_SECONDS")
+    if not configured:
+        return 21600  # 6 hours
+    try:
+        return int(configured)
+    except ValueError:
+        return 21600

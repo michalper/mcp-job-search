@@ -97,6 +97,9 @@ gracefully when something is unset):
 | `RAPIDAPI_JSEARCH_KEY` | `search_jobs` | unset — JSearch skipped |
 | `LINT_RULES_PATH` | `lint_cv` | bundled `config/lint_rules.example.yaml` |
 | `REGISTRY_CONFIG_PATH` | `log_application` | bundled `config/registry.example.yaml` |
+| `CHROME_PATH` | `render_pdf` | auto-detected (macOS app bundle, Linux `$PATH`, common Windows install dirs) |
+| `SEARCH_CACHE_DIR` | `search_jobs` | `~/.cache/mcp-job-search/search` |
+| `SEARCH_CACHE_TTL_SECONDS` | `search_jobs` | `21600` (6 hours) |
 
 Add to your MCP client config (e.g. Claude Code's `.mcp.json`):
 

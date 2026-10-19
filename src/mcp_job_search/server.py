@@ -49,7 +49,9 @@ server = MCPServer(
         "JSearch — only if their API keys are configured via environment "
         "variables). Returns normalized jobs plus a list of source errors "
         "(e.g. a source skipped because its key isn't set) — never raises on "
-        "a single source's failure. This does NOT scrape or search sites "
+        "a single source's failure. Results are cached by query for "
+        "SEARCH_CACHE_TTL_SECONDS (default 6h) to protect JSearch's free "
+        "quota; pass use_cache=False to force a fresh query. This does NOT scrape or search sites "
         "without a public API (e.g. NoFluffJobs, JustJoin.it, Pracuj.pl) — "
         "use fetch_job_posting for a specific URL on those instead."
     )
@@ -66,9 +68,13 @@ def search_jobs(
         list[str] | None,
         Field(description="Limit to these source names, e.g. ['arbeitnow']. Default: all."),
     ] = None,
+    use_cache: Annotated[
+        bool, Field(description="Reuse a cached result. False forces a fresh query.")
+    ] = True,
 ) -> dict[str, Any]:
     return _search_jobs(
-        keywords=keywords, location=location, remote_only=remote_only, sources=sources
+        keywords=keywords, location=location, remote_only=remote_only,
+        sources=sources, use_cache=use_cache,
     )
 
 

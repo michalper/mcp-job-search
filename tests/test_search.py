@@ -1,9 +1,16 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from mcp_job_search import search
 from mcp_job_search.sources.base import NormalizedJob, SourceError
+
+
+@pytest.fixture(autouse=True)
+def _isolated_cache_dir(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("SEARCH_CACHE_DIR", str(tmp_path / "search_cache"))
 
 
 class _FakeSource:
@@ -73,3 +80,39 @@ def test_unknown_source_name_reported_as_error(monkeypatch: pytest.MonkeyPatch) 
     result = search.search_jobs(keywords="PHP", sources=["does_not_exist"])
     assert result["jobs"] == []
     assert result["source_errors"][0]["reason"] == "unknown source"
+
+
+def test_second_identical_call_hits_cache_and_skips_sources(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    job = NormalizedJob(
+        title="PHP Dev", company="X", location="Remote", salary=None,
+        url="https://x", source="fake_a", posted_date=None, remote=True,
+    )
+    a = _FakeSource("fake_a", True, [job], None)
+    monkeypatch.setattr(search, "_REGISTRY", {"fake_a": a})
+
+    first = search.search_jobs(keywords="PHP", sources=["fake_a"])
+    assert first["from_cache"] is False
+    assert a.called is True
+
+    a.called = False
+    second = search.search_jobs(keywords="PHP", sources=["fake_a"])
+    assert second["from_cache"] is True
+    assert second["jobs"] == first["jobs"]
+    assert a.called is False
+
+
+def test_use_cache_false_always_queries_sources(monkeypatch: pytest.MonkeyPatch) -> None:
+    job = NormalizedJob(
+        title="PHP Dev", company="X", location="Remote", salary=None,
+        url="https://x", source="fake_a", posted_date=None, remote=True,
+    )
+    a = _FakeSource("fake_a", True, [job], None)
+    monkeypatch.setattr(search, "_REGISTRY", {"fake_a": a})
+
+    search.search_jobs(keywords="PHP", sources=["fake_a"], use_cache=False)
+    a.called = False
+    result = search.search_jobs(keywords="PHP", sources=["fake_a"], use_cache=False)
+    assert result["from_cache"] is False
+    assert a.called is True
