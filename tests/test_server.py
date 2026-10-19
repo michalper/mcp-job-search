@@ -3,9 +3,11 @@ from __future__ import annotations
 from mcp_job_search.server import (
     fetch_job_posting,
     lint_cv,
+    list_applications,
     log_application,
     render_pdf,
     search_jobs,
+    update_application_status,
 )
 
 
@@ -40,3 +42,48 @@ def test_log_application_tool_never_raises_without_config(monkeypatch) -> None:
     result = log_application(portal="test", date="2026-10-19", company="X", role="Y")
     assert result["success"] is False
     assert result["error"] is not None
+
+
+def test_list_applications_tool_never_raises_without_config(monkeypatch) -> None:
+    monkeypatch.delenv("REGISTRY_CONFIG_PATH", raising=False)
+    result = list_applications()
+    assert result["applications"] == []
+    assert result["error"] is not None
+
+
+def test_update_application_status_tool_never_raises_without_config(monkeypatch) -> None:
+    monkeypatch.delenv("REGISTRY_CONFIG_PATH", raising=False)
+    result = update_application_status(portal="test", company="X", new_status="y")
+    assert result["success"] is False
+    assert result["error"] is not None
+
+
+def test_list_and_update_applications_tools_round_trip(tmp_path, monkeypatch) -> None:
+    import yaml
+
+    registry = tmp_path / "registry.md"
+    registry.write_text(
+        "## justjoin.it\n\n"
+        "| Date | Company | Role | Status |\n|---|---|---|---|\n"
+        "| 2026-10-10 | Acme | Backend Dev | — |\n"
+    )
+    cfg_path = tmp_path / "registry_config.yaml"
+    cfg_path.write_text(
+        yaml.dump(
+            {
+                "registry_path": str(registry),
+                "columns": ["Date", "Company", "Role", "Status"],
+                "column_map": {"Status": "status_note"},
+            }
+        )
+    )
+    monkeypatch.setenv("REGISTRY_CONFIG_PATH", str(cfg_path))
+
+    found = list_applications(company="acme")
+    assert found["count"] == 1
+
+    updated = update_application_status(portal="justjoin.it", company="Acme", new_status="rozmowa")
+    assert updated["success"] is True
+
+    refreshed = list_applications(company="acme")
+    assert refreshed["applications"][0]["fields"]["status_note"] == "rozmowa"

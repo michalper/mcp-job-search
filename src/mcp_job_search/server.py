@@ -18,7 +18,9 @@ from typing import Annotated, Any
 from mcp.server.mcpserver import MCPServer
 from pydantic import Field
 
+from .applications import list_applications as _list_applications
 from .applications import log_application as _log_application
+from .applications import update_application_status as _update_application_status
 from .fetch_posting import fetch_job_posting as _fetch_job_posting
 from .lint import lint_cv as _lint_cv
 from .pdf import render_pdf as _render_pdf
@@ -146,12 +148,15 @@ def lint_cv(
 
 @server.tool(
     description=(
-        "Appends one row to your application registry (a Markdown file with "
-        "one '## <portal>' heading per job board, each holding a table). "
-        "Target file and column layout come from REGISTRY_CONFIG_PATH "
-        "(default: the bundled generic example). Never invents text for "
-        "free-text fields — only places exactly what you pass. Use dry_run "
-        "to preview the row and insertion point without writing."
+        "Mutates the registry file — appends one new row, it does not check "
+        "for an existing one first. Call list_applications(company=...) "
+        "beforehand if you need to avoid logging a duplicate. Target file "
+        "and column layout come from REGISTRY_CONFIG_PATH (default: the "
+        "bundled generic example). Never invents text for free-text fields "
+        "— only places exactly what you pass. Use dry_run to preview the "
+        "row and insertion point without writing. To change an existing "
+        "row's status later, use update_application_status instead of "
+        "calling this again."
     )
 )
 def log_application(
@@ -172,6 +177,61 @@ def log_application(
     return _log_application(
         portal=portal, date_=date, company=company, role=role, rate=rate,
         mode=mode, level=level, status_note=status_note, dry_run=dry_run,
+    )
+
+
+@server.tool(
+    description=(
+        "Read-only — never modifies the registry file. Returns rows from "
+        "your application registry, optionally filtered by portal (exact, "
+        "case-insensitive section heading) and/or company (case-insensitive "
+        "substring match). Call this before log_application to check "
+        "whether you've already applied to a company — the registry's own "
+        "'## <portal>' structure and column layout are returned as-is via "
+        "each entry's `fields` dict, so this also works against registries "
+        "with custom/non-English column names."
+    )
+)
+def list_applications(
+    portal: Annotated[
+        str | None,
+        Field(description="Exact portal section name, e.g. 'justjoin.it'. Omit for all."),
+    ] = None,
+    company: Annotated[
+        str | None, Field(description="Case-insensitive substring match on the company field.")
+    ] = None,
+) -> dict[str, Any]:
+    return _list_applications(portal=portal, company=company)
+
+
+@server.tool(
+    description=(
+        "Mutates the registry file — rewrites one row's status cell in "
+        "place, leaving every other cell and the file's row order "
+        "untouched. Finds the row by portal (exact) + company (case- "
+        "insensitive substring); if more than one row matches, nothing is "
+        "written and the error lists the matching line numbers — pass role "
+        "to disambiguate instead of guessing which one was meant. Use "
+        "dry_run to preview old_row/new_row without writing. Call "
+        "list_applications first if you're not sure a row exists."
+    )
+)
+def update_application_status(
+    portal: Annotated[str, Field(description="Exact portal section name, e.g. 'justjoin.it'.")],
+    company: Annotated[
+        str, Field(description="Case-insensitive substring match on the company field.")
+    ],
+    new_status: Annotated[
+        str, Field(description="Replacement text for the Status cell, placed verbatim.")
+    ],
+    role: Annotated[
+        str | None,
+        Field(description="Case-insensitive substring match on the role field, to disambiguate."),
+    ] = None,
+    dry_run: Annotated[bool, Field(description="Preview without writing to the file.")] = False,
+) -> dict[str, Any]:
+    return _update_application_status(
+        portal=portal, company=company, new_status=new_status, role=role, dry_run=dry_run,
     )
 
 
