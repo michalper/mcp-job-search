@@ -3,6 +3,7 @@
 <!-- mcp-name: io.github.michalper/mcp-job-search -->
 
 [![CI](https://github.com/michalper/mcp-job-search/actions/workflows/ci.yml/badge.svg)](https://github.com/michalper/mcp-job-search/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/mcp-job-search-mp.svg)](https://pypi.org/project/mcp-job-search-mp/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue.svg)](pyproject.toml)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
@@ -56,6 +57,17 @@ wrote — semantic fabrication (two true facts combined into a false-sounding
 one) still needs a human or an independent adversarial review to catch.
 
 ## Install
+
+From PyPI (published as `mcp-job-search-mp` — `mcp-job-search` was already
+taken by an unrelated project; the command stays `mcp-job-search`):
+
+```bash
+pip install mcp-job-search-mp
+# or, for an isolated tool install:
+uvx mcp-job-search-mp
+```
+
+From source, for development:
 
 ```bash
 git clone https://github.com/michalper/mcp-job-search.git
