@@ -18,6 +18,12 @@ Five tools:
 
 - **`search_jobs`** — real search across job-board APIs that actually have one
   (Arbeitnow, free, no key; Adzuna and JSearch if you supply API keys).
+  **Verified live (2026-10-19):** a real `keywords="PHP"` query against Adzuna's
+  Polish instance (`adzuna.pl`) returned 10 real, current listings from
+  recognizable employers (PKO BP Finat, OTCF, Capgemini, Wakacje.pl) — Adzuna
+  genuinely covers the Polish PHP market, not just Western Europe/US. Adzuna's
+  free tier is 25 one-time test calls, then a paid plan (£8/month, 5,000
+  calls) — budget calls accordingly once past testing.
 - **`fetch_job_posting`** — turns a single job-posting URL you already found
   into structured text, for boards with no public search API.
 
