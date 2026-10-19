@@ -24,6 +24,15 @@ Five tools:
   genuinely covers the Polish PHP market, not just Western Europe/US. Adzuna's
   free tier is 25 one-time test calls, then a paid plan (£8/month, 5,000
   calls) — budget calls accordingly once past testing.
+
+  **JSearch, also verified live, with two real bugs caught and fixed in the
+  process** (both only visible by making a real request, not from reading the
+  parameter docs): the real endpoint is `/search-v2`, not `/search` (404
+  otherwise), the response nests results under `data.jobs` not a flat `data`
+  list, and `country` defaults server-side to `us` regardless of what the
+  free-text query says — set `JSEARCH_COUNTRY` (mirrors `ADZUNA_COUNTRY`) to
+  override it. With `JSEARCH_COUNTRY=pl`, `keywords="PHP Magento"` returned 10
+  real Warsaw listings including PKO BP Finat and Sportano.com.
 - **`fetch_job_posting`** — turns a single job-posting URL you already found
   into structured text, for boards with no public search API.
 
@@ -101,6 +110,7 @@ gracefully when something is unset):
 | `ADZUNA_APP_ID`, `ADZUNA_APP_KEY` | `search_jobs` | unset — Adzuna skipped |
 | `ADZUNA_COUNTRY` | `search_jobs` | `pl` |
 | `RAPIDAPI_JSEARCH_KEY` | `search_jobs` | unset — JSearch skipped |
+| `JSEARCH_COUNTRY` | `search_jobs` | `us` (JSearch's own API default) |
 | `LINT_RULES_PATH` | `lint_cv` | bundled `config/lint_rules.example.yaml` |
 | `REGISTRY_CONFIG_PATH` | `log_application` | bundled `config/registry.example.yaml` |
 | `CHROME_PATH` | `render_pdf` | auto-detected (macOS app bundle, Linux `$PATH`, common Windows install dirs) |

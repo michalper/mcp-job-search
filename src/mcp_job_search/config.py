@@ -29,6 +29,13 @@ def jsearch_key() -> str | None:
     return os.environ.get("RAPIDAPI_JSEARCH_KEY") or None
 
 
+def jsearch_country() -> str:
+    """ISO 3166-1 alpha-2 country code. JSearch's own API default is "us" —
+    mirrored here rather than guessed from the free-text `location` search
+    param, since the API has no country-name-to-code resolution of its own."""
+    return os.environ.get("JSEARCH_COUNTRY", "us")
+
+
 _MACOS_CHROME_CANDIDATES = [
     "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
     "/Applications/Chromium.app/Contents/MacOS/Chromium",

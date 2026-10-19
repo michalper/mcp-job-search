@@ -1,12 +1,18 @@
-"""JSearch (RapidAPI) — aggregates Google for Jobs, Indeed, LinkedIn, Glassdoor,
-ZipRecruiter. Free tier: 200 requests/month. Needs `RAPIDAPI_JSEARCH_KEY`.
+"""JSearch (RapidAPI) — aggregates Google for Jobs (Indeed, LinkedIn,
+Glassdoor, ZipRecruiter and others indexed there). Free tier: 200
+requests/month. Needs `RAPIDAPI_JSEARCH_KEY`.
 
-NOT YET VERIFIED empirically whether it surfaces Polish IT-board listings
-(pracuj.pl / justjoin.it / nofluffjobs) — those boards may publish Google for
-Jobs structured data, which would make this the one legitimate path to their
-postings, but this needs a real key and a live query to confirm. Do that check
-before promising this source covers the Polish IT market — see build-order
-step 3 in the project plan.
+Verified live (2026-10-19), three things an earlier version of this file got
+wrong by trusting the parameter docs instead of a real request/response:
+1. The endpoint is `/search-v2`, not `/search` (404 otherwise) — confirmed
+   from RapidAPI's own "Code snippet" panel, not the docs prose.
+2. The response nests results under `data.jobs`, not a flat `data` list.
+3. `country` defaults to "us" server-side; putting "in Poland" in the
+   free-text `query` does NOT change which country is searched — `country`
+   must be set explicitly (see `config.jsearch_country()` / `JSEARCH_COUNTRY`).
+   Without it, a real `query="PHP developer", location="Poland"` call
+   returned zero results; with `country=pl` it returned 10 real Warsaw
+   listings (Boldare, SoftTeco, Ness Solution among them).
 """
 
 from __future__ import annotations
@@ -65,10 +71,15 @@ def search(
     if key is None:
         return [], SourceError(source=name, reason="RAPIDAPI_JSEARCH_KEY not set — skipped")
 
-    params = {"query": _build_query(keywords, location), "page": "1", "num_pages": "1"}
+    params = {
+        "query": _build_query(keywords, location),
+        "num_pages": "1",
+        "date_posted": "all",
+        "country": config.jsearch_country(),
+    }
     if remote_only:
-        params["remote_jobs_only"] = "true"
-    url = f"https://{_HOST}/search?{urllib.parse.urlencode(params)}"
+        params["work_from_home"] = "true"
+    url = f"https://{_HOST}/search-v2?{urllib.parse.urlencode(params)}"
     req = urllib.request.Request(
         url,
         headers={
@@ -87,5 +98,8 @@ def search(
         detail = payload.get("error", payload)
         return [], SourceError(source=name, reason=f"JSearch error: {detail}")
 
-    results = payload.get("data", [])
+    data = payload.get("data")
+    # v2 nests the list under data.jobs (verified live 2026-10-19); keep the
+    # old flat-list shape as a fallback in case a future response reverts.
+    results = data.get("jobs", []) if isinstance(data, dict) else (data or [])
     return [_to_normalized(j) for j in results if isinstance(j, dict)], None

@@ -30,13 +30,37 @@ def test_unavailable_without_key(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_search_with_key(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("RAPIDAPI_JSEARCH_KEY", "abc123")
     payload = json.loads((FIXTURES / "jsearch_response.json").read_text())
-    with patch("urllib.request.urlopen", return_value=_fake_response(payload)):
+    with patch("urllib.request.urlopen", return_value=_fake_response(payload)) as mocked:
         jobs, error = jsearch.search("PHP", location="Warsaw", remote_only=True)
     assert error is None
     assert len(jobs) == 1
     assert jobs[0].company == "Acme Shop"
     assert jobs[0].remote is True
     assert jobs[0].salary == "15000-20000 PLN"
+    requested_url = mocked.call_args.args[0].full_url
+    assert "/search-v2?" in requested_url
+    assert "country=us" in requested_url  # default; JSEARCH_COUNTRY overrides it
+    assert "work_from_home=true" in requested_url
+
+
+def test_search_respects_jsearch_country_override(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("RAPIDAPI_JSEARCH_KEY", "abc123")
+    monkeypatch.setenv("JSEARCH_COUNTRY", "pl")
+    payload = json.loads((FIXTURES / "jsearch_response.json").read_text())
+    with patch("urllib.request.urlopen", return_value=_fake_response(payload)) as mocked:
+        jsearch.search("PHP", location=None, remote_only=False)
+    requested_url = mocked.call_args.args[0].full_url
+    assert "country=pl" in requested_url
+
+
+def test_search_falls_back_to_flat_data_list(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("RAPIDAPI_JSEARCH_KEY", "abc123")
+    flat_payload = {"status": "OK", "data": [{"job_title": "PHP Dev", "employer_name": "X"}]}
+    with patch("urllib.request.urlopen", return_value=_fake_response(flat_payload)):
+        jobs, error = jsearch.search("PHP", location=None, remote_only=False)
+    assert error is None
+    assert len(jobs) == 1
+    assert jobs[0].title == "PHP Dev"
 
 
 def test_search_returns_error_on_api_error(monkeypatch: pytest.MonkeyPatch) -> None:
