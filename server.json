@@ -1,7 +1,7 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.michalper/mcp-job-search",
-  "description": "MCP server for job search: multi-source search, posting fetch, CV PDF rendering, configurable anti-fabrication linting, and application-registry logging",
+  "description": "Job search mechanics for an AI assistant: search, fetch postings, render CVs, lint, log.",
   "repository": {
     "url": "https://github.com/michalper/mcp-job-search",
     "source": "github"
@@ -11,7 +11,7 @@
     {
       "registryType": "pypi",
       "registryBaseUrl": "https://pypi.org",
-      "identifier": "mcp-job-search",
+      "identifier": "mcp-job-search-mp",
       "version": "0.1.0",
       "transport": {
         "type": "stdio"
