@@ -19,17 +19,32 @@ Five tools:
 - **`search_jobs`** — real search across job-board APIs that actually have one
   (Arbeitnow, free, no key; Adzuna and JSearch if you supply API keys).
 - **`fetch_job_posting`** — turns a single job-posting URL you already found
-  into structured text, for boards with no public search API. Works well on
-  server-rendered pages (verified live against JustJoin.it and NoFluffJobs).
-  **By design, not a bug:** it fails on pages behind a bot-detection
-  challenge (verified against Pracuj.pl: a plain HTTP fetch gets a Cloudflare
-  `cf-mitigated: challenge` 403, confirmed by response headers, not just a
-  missing-JS issue). This tool will never try to solve that challenge — doing
-  so automatically is CAPTCHA/bot-detection bypass, which this project
-  treats as off-limits regardless of how narrow the use case is. A real,
-  human-driven browser session passes the same challenge normally (verified:
-  the full posting loaded cleanly that way) — for a page like this, read it
-  with a real browser instead of this tool.
+  into structured text, for boards with no public search API.
+
+  **Verified live, one real posting per site (2026-10-19):**
+
+  | Site | Result |
+  |---|---|
+  | JustJoin.it | ✅ clean extraction |
+  | NoFluffJobs | ✅ clean extraction |
+  | Bulldogjob | ✅ clean extraction |
+  | theprotocol.it | ✅ clean extraction |
+  | Solid.Jobs | ✅ clean extraction |
+  | CzyJestEldorado.pl (aggregator) | ✅ clean extraction |
+  | LinkedIn (`/jobs/view/<id>`) | ✅ clean extraction — the single-posting view is public |
+  | Jooble | N/A — it redirects to the source site (e.g. JustJoin.it); nothing of its own to fetch |
+  | Pracuj.pl | ❌ blocked — see below |
+  | Indeed (`pl.indeed.com`) | ❌ blocked — see below |
+
+  **By design, not a bug:** Pracuj.pl and Indeed both sit behind an active
+  Cloudflare bot-detection challenge — confirmed via response headers
+  (`cf-mitigated: challenge` / 401 with a Cloudflare bot-management cookie,
+  `server: cloudflare`), not just a missing-JS issue. This tool will never
+  try to solve that challenge automatically — doing so is CAPTCHA/bot-
+  detection bypass, which this project treats as off-limits regardless of
+  how narrow the use case is. A real, human-driven browser session passes
+  both sites' challenges normally (verified live, full content loaded) — for
+  a page like this, read it with a real browser instead of this tool.
 - **`render_pdf`** — renders a CV/cover-letter HTML file to PDF via headless
   Chrome, with the exact flags that avoid known hangs and silent failures.
 - **`lint_cv`** — a configurable mechanical linter: banned phrases, a
