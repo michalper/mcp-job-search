@@ -53,11 +53,12 @@ def _build_url(keywords: str, location: str | None, remote_only: bool) -> str | 
 
 def _salary_text(job: dict[str, Any]) -> str | None:
     lo, hi = job.get("salary_min"), job.get("salary_max")
-    if not lo and not hi:
+    if lo is None and hi is None:
         return None
-    if lo and hi and lo != hi:
+    if lo is not None and hi is not None and lo != hi:
         return f"{lo:.0f}-{hi:.0f}"
-    return f"{(lo or hi):.0f}"
+    value = lo if lo is not None else hi
+    return f"{value:.0f}"
 
 
 def _to_normalized(job: dict[str, Any]) -> NormalizedJob:
@@ -88,6 +89,10 @@ def search(
             payload = json.loads(resp.read().decode("utf-8"))
     except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as exc:
         return [], SourceError(source=name, reason=f"request failed: {exc}")
+
+    if not isinstance(payload, dict):
+        shape = type(payload).__name__
+        return [], SourceError(source=name, reason=f"unexpected response shape: {shape}")
 
     if "exception" in payload:
         detail = payload.get("display", payload["exception"])

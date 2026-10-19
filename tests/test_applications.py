@@ -21,6 +21,7 @@ def _setup_registry(tmp_path: Path) -> tuple[Path, Path]:
                 "columns": ["Date", "Company", "Role", "Rate", "Mode", "Level", "Status"],
                 "date_column": "Date",
                 "missing_value": "—",
+                "column_map": {"Status": "status_note"},
             }
         )
     )
@@ -102,6 +103,18 @@ def test_column_map_supports_non_english_headers(tmp_path: Path) -> None:
     )
     assert result["success"] is True
     assert result["row_inserted"] == "| 2026-10-19 | Acme PL | Dev | aktywne |"
+
+
+def test_explicit_empty_string_is_preserved_not_replaced_with_placeholder(tmp_path: Path) -> None:
+    cfg_path, _registry = _setup_registry(tmp_path)
+    result = log_application(
+        portal="justjoin.it", date_="2026-10-19", company="X", role="Y",
+        status_note="", registry_config_path=str(cfg_path),
+    )
+    assert result["success"] is True
+    # an explicit "" means "write a blank cell", distinct from an omitted
+    # (None) field, which falls back to the missing_value placeholder
+    assert result["row_inserted"].endswith("|  |")
 
 
 def test_missing_values_use_placeholder(tmp_path: Path) -> None:

@@ -11,8 +11,8 @@ wrong by trusting the parameter docs instead of a real request/response:
    free-text `query` does NOT change which country is searched — `country`
    must be set explicitly (see `config.jsearch_country()` / `JSEARCH_COUNTRY`).
    Without it, a real `query="PHP developer", location="Poland"` call
-   returned zero results; with `country=pl` it returned 10 real Warsaw
-   listings (Boldare, SoftTeco, Ness Solution among them).
+   returned zero results; with `country=pl` it returned 10 real, current
+   Warsaw listings from recognizable employers.
 """
 
 from __future__ import annotations
@@ -44,11 +44,12 @@ def _build_query(keywords: str, location: str | None) -> str:
 def _salary_text(job: dict[str, Any]) -> str | None:
     lo, hi = job.get("job_min_salary"), job.get("job_max_salary")
     currency = job.get("job_salary_currency") or ""
-    if not lo and not hi:
+    if lo is None and hi is None:
         return None
-    if lo and hi and lo != hi:
+    if lo is not None and hi is not None and lo != hi:
         return f"{lo:.0f}-{hi:.0f} {currency}".strip()
-    return f"{(lo or hi):.0f} {currency}".strip()
+    value = lo if lo is not None else hi
+    return f"{value:.0f} {currency}".strip()
 
 
 def _to_normalized(job: dict[str, Any]) -> NormalizedJob:
@@ -93,6 +94,10 @@ def search(
             payload = json.loads(resp.read().decode("utf-8"))
     except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as exc:
         return [], SourceError(source=name, reason=f"request failed: {exc}")
+
+    if not isinstance(payload, dict):
+        shape = type(payload).__name__
+        return [], SourceError(source=name, reason=f"unexpected response shape: {shape}")
 
     if payload.get("status") == "ERROR":
         detail = payload.get("error", payload)

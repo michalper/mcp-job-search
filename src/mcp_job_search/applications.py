@@ -1,7 +1,7 @@
 """log_application — appends one row to a Markdown job-application registry.
 
 The registry format and target file are configurable (see
-`config/registry.example.yaml`) rather than hardcoded, so this works against
+`src/mcp_job_search/examples/registry.example.yaml`) rather than hardcoded, so this works against
 any "one '## <portal>' section per job board, one Markdown table per section"
 file. It never invents prose for free-text fields — it places exactly what
 the caller passes, preserving a human-edited file's own style.
@@ -44,7 +44,11 @@ def _validate_date(value: str) -> str | None:
 
 
 def _build_row(columns: list[str], values: dict[str, str | None], missing_value: str) -> str:
-    cells = [str(values.get(col) or missing_value) for col in columns]
+    # `is None` on purpose: an explicit "" means the caller wants a blank
+    # cell, not a missing one — only an unset (None) value falls back.
+    cells = [
+        str(values.get(col)) if values.get(col) is not None else missing_value for col in columns
+    ]
     return "| " + " | ".join(cells) + " |"
 
 

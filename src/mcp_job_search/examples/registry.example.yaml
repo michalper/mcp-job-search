@@ -14,10 +14,14 @@ date_column: "Date"
 missing_value: "—"
 order: desc  # newest first — matches the convention already used in the file
 
-# Optional: map your own column headers (any language) to the tool's field
-# names (date, company, role, rate, mode, level, status_note). Omit this if
-# your headers already match the field names case-insensitively, as above.
-# column_map:
-#   Data: date
-#   Firma: company
-#   Stanowisko: role
+# Maps column headers (any language) to the tool's field names (date,
+# company, role, rate, mode, level, status_note). Every header above matches
+# its field name case-insensitively EXCEPT "Status", whose field name is
+# status_note (not "status") — map it explicitly or that column is always
+# written as the missing_value placeholder. Add entries here for any other
+# header, in any language, that doesn't match its field name as-is:
+column_map:
+  Status: status_note
+# Data: date
+# Firma: company
+# Stanowisko: role

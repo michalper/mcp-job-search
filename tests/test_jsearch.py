@@ -71,3 +71,37 @@ def test_search_returns_error_on_api_error(monkeypatch: pytest.MonkeyPatch) -> N
     assert jobs == []
     assert error is not None
     assert "quota exceeded" in error.reason
+
+
+def test_search_returns_error_on_non_dict_payload(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("RAPIDAPI_JSEARCH_KEY", "abc123")
+    cm = MagicMock()
+    cm.__enter__.return_value.read.return_value = b'"unexpected string response"'
+    cm.__exit__.return_value = False
+    with patch("urllib.request.urlopen", return_value=cm):
+        jobs, error = jsearch.search("PHP", location=None, remote_only=False)
+    assert jobs == []
+    assert error is not None
+    assert "unexpected response shape" in error.reason
+
+
+def test_zero_salary_min_is_not_treated_as_missing(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("RAPIDAPI_JSEARCH_KEY", "abc123")
+    payload = {
+        "status": "OK",
+        "data": {
+            "jobs": [
+                {
+                    "job_title": "Junior PHP Developer",
+                    "employer_name": "Acme",
+                    "job_min_salary": 0,
+                    "job_max_salary": 12000,
+                    "job_salary_currency": "USD",
+                }
+            ]
+        },
+    }
+    with patch("urllib.request.urlopen", return_value=_fake_response(payload)):
+        jobs, error = jsearch.search("PHP", location=None, remote_only=False)
+    assert error is None
+    assert jobs[0].salary == "0-12000 USD"

@@ -40,3 +40,18 @@ def test_adzuna_credentials_require_both_values(monkeypatch: pytest.MonkeyPatch)
     assert config.adzuna_credentials() is None
     monkeypatch.setenv("ADZUNA_APP_KEY", "key")
     assert config.adzuna_credentials() == ("id", "key")
+
+
+def test_example_configs_resolve_inside_the_installable_package(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("LINT_RULES_PATH", raising=False)
+    monkeypatch.delenv("REGISTRY_CONFIG_PATH", raising=False)
+    lint_path = config.lint_rules_path()
+    registry_path = config.registry_config_path()
+    # must live under src/mcp_job_search/ (ships in the wheel), not a
+    # sibling config/ directory (never packaged — would 404 after `pip install`)
+    assert lint_path.parent.name == "examples"
+    assert lint_path.parent.parent.name == "mcp_job_search"
+    assert lint_path.is_file()
+    assert registry_path.is_file()

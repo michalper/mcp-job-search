@@ -51,3 +51,32 @@ def _app_cache_dir() -> Path:
     from mcp_job_search import config
 
     return config.search_cache_dir()
+
+
+def test_different_jsearch_country_is_a_different_cache_entry(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("JSEARCH_COUNTRY", "us")
+    cache.store("PHP", None, False, None, {"jobs": ["us-result"]})
+    monkeypatch.setenv("JSEARCH_COUNTRY", "pl")
+    # same query, different country config — must NOT replay the US-cached result
+    assert cache.get_cached("PHP", None, False, None) is None
+    cache.store("PHP", None, False, None, {"jobs": ["pl-result"]})
+    assert cache.get_cached("PHP", None, False, None) == {"jobs": ["pl-result"]}
+    monkeypatch.setenv("JSEARCH_COUNTRY", "us")
+    assert cache.get_cached("PHP", None, False, None) == {"jobs": ["us-result"]}
+
+
+def test_adding_an_api_key_invalidates_the_old_cache_entry(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("RAPIDAPI_JSEARCH_KEY", raising=False)
+    cache.store("PHP", None, False, None, {"jobs": []})
+    monkeypatch.setenv("RAPIDAPI_JSEARCH_KEY", "abc123")
+    assert cache.get_cached("PHP", None, False, None) is None
+
+
+def test_empty_sources_list_is_distinct_from_none() -> None:
+    cache.store("PHP", None, False, None, {"jobs": ["all-sources"]})
+    assert cache.get_cached("PHP", None, False, []) is None
+    cache.store("PHP", None, False, [], {"jobs": []})
+    assert cache.get_cached("PHP", None, False, []) == {"jobs": []}
+    assert cache.get_cached("PHP", None, False, None) == {"jobs": ["all-sources"]}

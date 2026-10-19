@@ -4,8 +4,9 @@ from pathlib import Path
 
 from mcp_job_search.lint import lint_cv
 
+PKG = Path(__file__).parent.parent / "src" / "mcp_job_search"
 FIXTURES = Path(__file__).parent / "fixtures"
-RULES = Path(__file__).parent.parent / "config" / "lint_rules.example.yaml"
+RULES = PKG / "examples" / "lint_rules.example.yaml"
 
 
 def test_clean_cv_has_no_errors() -> None:
@@ -37,6 +38,33 @@ def test_missing_html_file_reports_error() -> None:
     result = lint_cv(str(FIXTURES / "does_not_exist.html"), rules_path=str(RULES))
     assert result["clean"] is False
     assert "not found" in result["findings"][0]["message"]
+
+
+def test_missing_rules_file_reports_graceful_error(tmp_path: Path) -> None:
+    result = lint_cv(
+        str(FIXTURES / "sample_cv_clean.html"), rules_path=str(tmp_path / "does_not_exist.yaml")
+    )
+    assert result["clean"] is False
+    assert "lint rules file not found" in result["findings"][0]["message"]
+
+
+def test_invalid_yaml_rules_file_reports_graceful_error(tmp_path: Path) -> None:
+    bad_rules = tmp_path / "bad.yaml"
+    bad_rules.write_text("content_bans: [this is not: valid: yaml: at all")
+    result = lint_cv(str(FIXTURES / "sample_cv_clean.html"), rules_path=str(bad_rules))
+    assert result["clean"] is False
+    assert "not valid YAML" in result["findings"][0]["message"]
+
+
+def test_bundled_example_registry_maps_status_column() -> None:
+    # regression: the Status column's field name is status_note, not "status" —
+    # the bundled example must map it or every log_application against the
+    # README's documented default config silently drops the status text
+    import yaml
+
+    example = PKG / "examples" / "registry.example.yaml"
+    cfg = yaml.safe_load(example.read_text())
+    assert cfg.get("column_map", {}).get("Status") == "status_note"
 
 
 def test_page_limit_checked_only_with_pdf_path(tmp_path: Path) -> None:

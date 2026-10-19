@@ -103,6 +103,36 @@ def test_second_identical_call_hits_cache_and_skips_sources(
     assert a.called is False
 
 
+def test_transient_source_failure_is_not_cached(monkeypatch: pytest.MonkeyPatch) -> None:
+    error = SourceError(source="fake_broken", reason="timeout")
+    broken = _FakeSource("fake_broken", True, [], error)
+    monkeypatch.setattr(search, "_REGISTRY", {"fake_broken": broken})
+
+    first = search.search_jobs(keywords="PHP", sources=["fake_broken"])
+    assert first["from_cache"] is False
+
+    broken.called = False
+    broken._error = None  # simulate the transient failure clearing up
+    second = search.search_jobs(keywords="PHP", sources=["fake_broken"])
+    assert second["from_cache"] is False  # must re-query, not replay the degraded result
+    assert broken.called is True
+
+
+def test_not_configured_skip_does_not_block_caching(monkeypatch: pytest.MonkeyPatch) -> None:
+    job = NormalizedJob(
+        title="PHP Dev", company="X", location="Remote", salary=None,
+        url="https://x", source="fake_ok", posted_date=None, remote=True,
+    )
+    ok_source = _FakeSource("fake_ok", True, [job], None)
+    skipped_source = _FakeSource("fake_skipped", False, [], None)
+    monkeypatch.setattr(search, "_REGISTRY", {s.name: s for s in (ok_source, skipped_source)})
+
+    first = search.search_jobs(keywords="PHP")
+    assert first["from_cache"] is False
+    second = search.search_jobs(keywords="PHP")
+    assert second["from_cache"] is True
+
+
 def test_use_cache_false_always_queries_sources(monkeypatch: pytest.MonkeyPatch) -> None:
     job = NormalizedJob(
         title="PHP Dev", company="X", location="Remote", salary=None,

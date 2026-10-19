@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import asdict
 from typing import Any
 
 from . import cache
@@ -14,12 +14,6 @@ _REGISTRY = {
     adzuna.name: adzuna,
     jsearch.name: jsearch,
 }
-
-
-@dataclass(frozen=True)
-class SearchResult:
-    jobs: list[NormalizedJob]
-    source_errors: list[SourceError]
 
 
 def search_jobs(
@@ -37,6 +31,7 @@ def search_jobs(
     wanted = sources if sources is not None else list(_REGISTRY)
     jobs: list[NormalizedJob] = []
     errors: list[SourceError] = []
+    had_transient_failure = False
 
     for source_name in wanted:
         module = _REGISTRY.get(source_name)
@@ -44,17 +39,21 @@ def search_jobs(
             errors.append(SourceError(source=source_name, reason="unknown source"))
             continue
         if not module.available():
+            # Permanent for this environment (no key set) — not a reason to
+            # skip caching, or a fully-configured query would never cache.
             errors.append(SourceError(source=source_name, reason="not configured — skipped"))
             continue
         found, error = module.search(keywords, location, remote_only)
         jobs.extend(found)
         if error is not None:
             errors.append(error)
+            # a real request/parse failure — don't cache this as "the" result
+            had_transient_failure = True
 
     result = {
         "jobs": [asdict(j) for j in jobs],
         "source_errors": [asdict(e) for e in errors],
     }
-    if use_cache:
+    if use_cache and not had_transient_failure:
         cache.store(keywords, location, remote_only, sources, result)
     return {**result, "from_cache": False}

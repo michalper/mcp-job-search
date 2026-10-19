@@ -89,8 +89,8 @@ gracefully when something is unset:
 | `ADZUNA_COUNTRY` | `search_jobs` | `pl` |
 | `RAPIDAPI_JSEARCH_KEY` | `search_jobs` | unset — JSearch skipped |
 | `JSEARCH_COUNTRY` | `search_jobs` | `us` (JSearch's own API default) |
-| `LINT_RULES_PATH` | `lint_cv` | bundled `config/lint_rules.example.yaml` |
-| `REGISTRY_CONFIG_PATH` | `log_application` | bundled `config/registry.example.yaml` |
+| `LINT_RULES_PATH` | `lint_cv` | bundled `src/mcp_job_search/examples/lint_rules.example.yaml` |
+| `REGISTRY_CONFIG_PATH` | `log_application` | bundled `src/mcp_job_search/examples/registry.example.yaml` |
 | `CHROME_PATH` | `render_pdf` | auto-detected (macOS app bundle, Linux `$PATH`, common Windows install dirs) |
 | `SEARCH_CACHE_DIR` | `search_jobs` | `~/.cache/mcp-job-search/search` |
 | `SEARCH_CACHE_TTL_SECONDS` | `search_jobs` | `21600` (6 hours) |
@@ -120,7 +120,7 @@ page like this, read it with a real browser instead of this tool.
 
 The CV draft here (`tests/fixtures/sample_cv_with_violations.html`) was
 seeded on purpose, and `lint_cv` is pointed at the bundled generic example
-rules (`config/lint_rules.example.yaml`), not a real person's facts:
+rules (`src/mcp_job_search/examples/lint_rules.example.yaml`), not a real person's facts:
 
 ```json
 {

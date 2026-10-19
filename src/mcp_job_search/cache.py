@@ -16,6 +16,19 @@ from typing import Any
 from . import config as app_config
 
 
+def _config_fingerprint() -> dict[str, Any]:
+    """Config state that changes what a query returns, even for identical
+    keywords/location/remote_only/sources — must be part of the cache key, or
+    e.g. setting JSEARCH_COUNTRY mid-session replays a stale wrong-country
+    result instead of querying fresh."""
+    return {
+        "adzuna_country": app_config.adzuna_country(),
+        "adzuna_configured": app_config.adzuna_credentials() is not None,
+        "jsearch_country": app_config.jsearch_country(),
+        "jsearch_configured": app_config.jsearch_key() is not None,
+    }
+
+
 def _cache_key(
     keywords: str, location: str | None, remote_only: bool, sources: list[str] | None
 ) -> str:
@@ -24,7 +37,10 @@ def _cache_key(
             "keywords": keywords.strip().lower(),
             "location": (location or "").strip().lower(),
             "remote_only": remote_only,
-            "sources": sorted(sources) if sources else None,
+            # `is not None` (not truthiness) so sources=[] and sources=None
+            # hash differently — they mean "no sources" vs "all sources".
+            "sources": sorted(sources) if sources is not None else None,
+            "config": _config_fingerprint(),
         },
         sort_keys=True,
     )

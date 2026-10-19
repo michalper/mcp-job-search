@@ -2,7 +2,7 @@ from mcp_job_search.lint import lint_cv
 
 result = lint_cv(
     "tests/fixtures/sample_cv_with_violations.html",
-    rules_path="config/lint_rules.example.yaml",
+    rules_path="src/mcp_job_search/examples/lint_rules.example.yaml",
 )
 
 print(f"lint_cv: {result['html_path'].split('/')[-1]}")

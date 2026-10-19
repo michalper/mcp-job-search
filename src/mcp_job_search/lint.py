@@ -1,7 +1,7 @@
 """lint_cv — configurable mechanical linter for CV/cover-letter HTML.
 
 This is a generic RULES ENGINE, not a hardcoded rule set: every regex/limit
-comes from a YAML file (see `config/lint_rules.example.yaml` for the shape).
+comes from a YAML file (see `src/mcp_job_search/examples/lint_rules.example.yaml` for the shape).
 Point `LINT_RULES_PATH` at your own file to lint against your own facts —
 this keeps personal/confidential banned-phrase lists out of this public repo.
 
@@ -81,7 +81,26 @@ def lint_cv(
             )
         )
 
-    rules = _load_rules(rules_p)
+    if not rules_p.is_file():
+        message = f"lint rules file not found: {rules_p}"
+        return asdict(
+            LintResult(
+                html_path=str(html_p), pdf_path=pdf_path, rules_path=str(rules_p),
+                findings=[{"severity": "error", "message": message}],
+                clean=False,
+            )
+        )
+    try:
+        rules = _load_rules(rules_p)
+    except yaml.YAMLError as exc:
+        message = f"lint rules file is not valid YAML: {exc}"
+        return asdict(
+            LintResult(
+                html_path=str(html_p), pdf_path=pdf_path, rules_path=str(rules_p),
+                findings=[{"severity": "error", "message": message}],
+                clean=False,
+            )
+        )
     html = html_p.read_text(encoding="utf-8", errors="replace")
     findings: list[dict[str, str]] = []
 

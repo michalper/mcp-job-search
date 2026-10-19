@@ -77,21 +77,21 @@ def chrome_path() -> str:
     return _LINUX_CHROME_BINARIES[0]
 
 
-_PACKAGE_ROOT = Path(__file__).resolve().parent.parent.parent
+_EXAMPLES_DIR = Path(__file__).resolve().parent / "examples"
 
 
 def lint_rules_path() -> Path:
     configured = os.environ.get("LINT_RULES_PATH")
     if configured:
         return Path(configured).expanduser()
-    return _PACKAGE_ROOT / "config" / "lint_rules.example.yaml"
+    return _EXAMPLES_DIR / "lint_rules.example.yaml"
 
 
 def registry_config_path() -> Path:
     configured = os.environ.get("REGISTRY_CONFIG_PATH")
     if configured:
         return Path(configured).expanduser()
-    return _PACKAGE_ROOT / "config" / "registry.example.yaml"
+    return _EXAMPLES_DIR / "registry.example.yaml"
 
 
 def search_cache_dir() -> Path:
