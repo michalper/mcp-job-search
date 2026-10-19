@@ -1,0 +1,61 @@
+# Example lint rules for `lint_cv`. This file ships with the public repo and
+# is intentionally generic — copy it, fill in YOUR OWN facts and banned
+# phrases, and point LINT_RULES_PATH at your copy. Keep your real copy out of
+# version control if it contains anything you don't want public (old employer
+# names, internal project codenames, specific achievement numbers, ...).
+
+# Regexes checked against the raw HTML, case-insensitive. Use these for
+# claims you know are false or banned for YOUR history (a title you never
+# held, a technology you've never shipped commercially, corporate jargon you
+# want to avoid).
+content_bans:
+  - pattern: 'synergi|proactive(ly)?\s+driv|leverag\w*\s+(cutting[- ]edge|best[- ]in[- ]class)'
+    message: "generic corporate jargon — replace with a concrete claim"
+  - pattern: 'revolutioniz\w*|disrupt\w*\s+the\s+industry'
+    message: "unsupported superlative — ground it in a specific result or cut it"
+
+# Checked only against the text inside your skills-section markup.
+skill_section:
+  selector: 'class="skill-name">([^<]*)<'
+  bans:
+    - pattern: 'Kubernetes|AWS|Azure|GCP'
+      message: "example: list cloud/K8s here only if you have real production experience"
+
+# "Lightweight achievement" overclaims — true facts stated with achievement
+# weight they don't deserve (a commit count, a single config file, etc.).
+weight_bans:
+  - pattern: '\.gitignore'
+    message: "a .gitignore edit is hygiene, not an achievement"
+  - pattern: '\d+\s*commits?\b'
+    message: "a commit count is not an achievement on its own"
+
+# Checked against the text of your name-subtitle / job-title line.
+title:
+  selector: 'class="title">([^<]*)<'
+  bans:
+    - pattern: 'full[\s-]?stack'
+      message: "example: flag a title claim that contradicts your real specialization"
+
+# Optional required-clause check (e.g. a GDPR/consent clause for a given locale).
+gdpr:
+  enabled: false
+  filename_suffix: "_pl.html"
+  exclude_contains: ["cover_letter"]
+  required_text: "REPLACE WITH YOUR REQUIRED CLAUSE TEXT"
+  message: "required clause missing"
+
+# Body links should usually be plain visible text, not <a href> markup.
+link_check:
+  enabled: true
+  main_selector: 'class="main"'
+
+# Page-count limits, checked only when lint_cv is given a pdf_path.
+page_limits:
+  default: 2
+  filename_contains:
+    cover_letter: 1
+    ats: 5
+  filename_startswith_unlimited:
+    - report
+  path_contains_unlimited:
+    - /reports/

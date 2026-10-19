@@ -1,0 +1,23 @@
+# Example registry config for `log_application`. Copy this, point it at your
+# own application-tracking Markdown file, and set REGISTRY_CONFIG_PATH to
+# your copy — keep a copy with your real registry_path out of version control
+# if that file contains anything you don't want public.
+#
+# The target file is a plain Markdown file with one "## <portal>" heading per
+# job board, each followed by a GitHub-flavoured Markdown table with the
+# columns listed below, newest row first. log_application only ever inserts
+# a row in the right place — it never rewrites prose you've written by hand.
+
+registry_path: "~/applications.md"
+columns: ["Date", "Company", "Role", "Rate", "Mode", "Level", "Status"]
+date_column: "Date"
+missing_value: "—"
+order: desc  # newest first — matches the convention already used in the file
+
+# Optional: map your own column headers (any language) to the tool's field
+# names (date, company, role, rate, mode, level, status_note). Omit this if
+# your headers already match the field names case-insensitively, as above.
+# column_map:
+#   Data: date
+#   Firma: company
+#   Stanowisko: role

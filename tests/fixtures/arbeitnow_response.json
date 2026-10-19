@@ -1,0 +1,40 @@
+{
+  "data": [
+    {
+      "slug": "senior-php-developer-berlin-1",
+      "company_name": "Acme Shop GmbH",
+      "title": "Senior PHP Developer",
+      "description": "<p>We need a Senior PHP developer with Magento experience.</p>",
+      "remote": true,
+      "url": "https://www.arbeitnow.com/jobs/companies/acme/senior-php-developer-berlin-1",
+      "tags": ["PHP", "Magento"],
+      "job_types": ["Full-time"],
+      "location": "Berlin",
+      "created_at": 1792000000
+    },
+    {
+      "slug": "sales-manager-munich-2",
+      "company_name": "Beta Cars",
+      "title": "Sales Manager",
+      "description": "<p>Lead our sales team.</p>",
+      "remote": false,
+      "url": "https://www.arbeitnow.com/jobs/companies/beta/sales-manager-munich-2",
+      "tags": ["Sales"],
+      "job_types": ["Full-time"],
+      "location": "Munich",
+      "created_at": 1791900000
+    },
+    {
+      "slug": "remote-php-engineer-3",
+      "company_name": "Gamma Software",
+      "title": "PHP Engineer",
+      "description": "<p>Remote PHP engineer, backend focus.</p>",
+      "remote": true,
+      "url": "https://www.arbeitnow.com/jobs/companies/gamma/remote-php-engineer-3",
+      "tags": ["PHP", "Backend"],
+      "job_types": ["Full-time"],
+      "location": "Remote",
+      "created_at": 1791800000
+    }
+  ]
+}

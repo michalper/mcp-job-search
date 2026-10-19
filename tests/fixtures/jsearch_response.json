@@ -1,0 +1,18 @@
+{
+  "status": "OK",
+  "data": [
+    {
+      "job_title": "Senior PHP Developer",
+      "employer_name": "Acme Shop",
+      "job_city": "Warsaw",
+      "job_country": "PL",
+      "job_min_salary": 15000,
+      "job_max_salary": 20000,
+      "job_salary_currency": "PLN",
+      "job_apply_link": "https://example.com/apply/123",
+      "job_google_link": "https://example.com/jobs/123",
+      "job_posted_at_datetime_utc": "2026-10-18T10:00:00.000Z",
+      "job_is_remote": true
+    }
+  ]
+}

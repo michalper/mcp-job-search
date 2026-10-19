@@ -1,0 +1,13 @@
+{
+  "results": [
+    {
+      "title": "Senior PHP Developer",
+      "company": {"display_name": "Acme Shop"},
+      "location": {"display_name": "Warszawa, Polska"},
+      "salary_min": 15000.0,
+      "salary_max": 20000.0,
+      "redirect_url": "https://www.adzuna.pl/land/ad/123456",
+      "created": "2026-10-18T10:00:00Z"
+    }
+  ]
+}
